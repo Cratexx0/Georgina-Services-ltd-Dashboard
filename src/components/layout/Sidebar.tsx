@@ -115,12 +115,7 @@ export function DashboardSidebar() {
                    path="/bookings" 
                    active={isActive("/bookings")} 
                  />
-                   <SidebarItem 
-                   icon={WrapText} 
-                   label="Create Services" 
-                   path="/create-service" 
-                   active={isActive("/create-services")} 
-                 />
+            
                  <SidebarItem 
                    icon={BarChartBig} 
                    label="Analytics" 
@@ -140,12 +135,12 @@ export function DashboardSidebar() {
                    active={isActive("/analytics")} 
                  />
            
-                       <SidebarItem 
+                       {/* <SidebarItem 
                    icon={MessageCircle} 
                    label="Contacts" 
                    path="/contacts" 
                    active={isActive("/contacts")} 
-                 />
+                 /> */}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

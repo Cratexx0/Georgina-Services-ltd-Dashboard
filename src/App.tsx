@@ -17,18 +17,17 @@ import { lazy, Suspense } from "react";
 const Dashboard = lazy(() => import("@/pages/Dashboard.tsx"));
 const Products = lazy(() => import("@/pages/Products.tsx"));
 const Orders = lazy(() => import("@/pages/Orders.tsx"));
-const Bookings = lazy(() => import("@/pages/Bookings.tsx"));
+
 const Analytics = lazy(() => import("@/pages/Analytics.tsx"));
 const Settings = lazy(() => import("@/pages/Settings.tsx"));
 const Categories = lazy(() => import("@/pages/Categories.tsx"));
-const CreateServices = lazy(() => import("@/pages/CreateService.tsx"));
+
 const ContactMessagesAdmin = lazy(() => import("@/pages/Contacts.tsx"));
 const ProductDetails = lazy(() => import("@/pages/ProductDetails.tsx"));
 const ProductEdit = lazy(() => import("@/pages/ProductEdit.tsx"));
 const Customers = lazy(() => import("@/pages/Customer.tsx"));
 const OrderDetailsPage = lazy(() => import("@/pages/OrderDeatils.tsx"));
 const Reviews = lazy(() => import("@/pages/Review.tsx"));
-const BookingDetails = lazy(() => import("@/pages/BookingDetails.tsx"));
 
 const queryClient = new QueryClient();
 
@@ -63,10 +62,7 @@ const App = () => (
                     <Route path="/categories" element={<Categories />} />
                     <Route path="/orders" element={<Orders />} />
                     <Route path="/admin/orders/:orderId" element={<OrderDetailsPage />} />
-                    <Route path="/bookings" element={<Bookings />} />
-                    <Route path="/admin/bookings/:id" element={<BookingDetails />} />
                     <Route path="/contacts" element={<ContactMessagesAdmin />} />
-                    <Route path="/create-service" element={<CreateServices/>} />
                      <Route path="/users" element={<Customers />} />
                     <Route path="/analytics" element={<Analytics />} />
                     <Route path="/settings" element={<Settings />} />

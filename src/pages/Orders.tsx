@@ -1,3 +1,5 @@
+
+
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +37,12 @@ import { useToast } from "@/hooks/use-toast";
 import adminApiService from "@/contexts/adminApiService";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
+// Safely convert API values (which may be strings like "12.50") to numbers
+const toNumber = (value: unknown): number => {
+  const n = typeof value === 'number' ? value : parseFloat(String(value ?? ''));
+  return Number.isFinite(n) ? n : 0;
+};
+
 // Define interfaces based on the actual raw API response
 interface RawOrderItem {
   id: number;
@@ -43,7 +51,7 @@ interface RawOrderItem {
   productName: string;
   image: string; // API returns singular 'image', not 'images'
   quantity: number;
-  price: number;
+  price: number | string; // decimals may arrive as strings
   createdAt: string;
   updatedAt: string;
   product?: {
@@ -64,7 +72,7 @@ interface RawApiOrder {
   id: number;
   userId: number;
   status: string;
-  totalAmount: number;
+  totalAmount: number | string; // decimals may arrive as strings
   paymentIntentId: string | null;
   paymentMethod: string;
   shippingAddress: string;
@@ -126,29 +134,27 @@ export default function Orders() {
     }
   };
 
-
-
-const determinePaymentStatus = (rawOrder: RawApiOrder): Order['paymentStatus'] => {
-  // Check the actual order status to determine if payment was completed
-  const orderStatus = rawOrder.status.toLowerCase();
-  
-  // These statuses mean payment was successful
-  if (orderStatus === 'paid' || 
-      orderStatus === 'confirmed' || 
-      orderStatus === 'processing' || 
-      orderStatus === 'shipped' || 
-      orderStatus === 'delivered') {
-    return 'paid';
-  }
-  
-  // Refunded status
-  if (orderStatus === 'refunded' || orderStatus === 'returned') {
-    return 'refunded';
-  }
-  
-  // All other statuses (pending, failed, cancelled, expired) mean unpaid
-  return 'unpaid';
-};
+  const determinePaymentStatus = (rawOrder: RawApiOrder): Order['paymentStatus'] => {
+    // Check the actual order status to determine if payment was completed
+    const orderStatus = rawOrder.status.toLowerCase();
+    
+    // These statuses mean payment was successful
+    if (orderStatus === 'paid' || 
+        orderStatus === 'confirmed' || 
+        orderStatus === 'processing' || 
+        orderStatus === 'shipped' || 
+        orderStatus === 'delivered') {
+      return 'paid';
+    }
+    
+    // Refunded status
+    if (orderStatus === 'refunded' || orderStatus === 'returned') {
+      return 'refunded';
+    }
+    
+    // All other statuses (pending, failed, cancelled, expired) mean unpaid
+    return 'unpaid';
+  };
 
   // Transform raw API order to UI order
   const transformRawOrderToUiOrder = (rawOrder: RawApiOrder): Order => {
@@ -160,7 +166,7 @@ const determinePaymentStatus = (rawOrder: RawApiOrder): Order['paymentStatus'] =
       customerEmail: rawOrder.user?.email || 'No email',
       status: mapApiStatusToUiStatus(rawOrder.status),
       paymentStatus: determinePaymentStatus(rawOrder),
-      total: rawOrder.totalAmount || 0,
+      total: toNumber(rawOrder.totalAmount),
       items: rawOrder.items || [],
       createdAt: rawOrder.createdAt,
       updatedAt: rawOrder.updatedAt,
@@ -194,11 +200,6 @@ const determinePaymentStatus = (rawOrder: RawApiOrder): Order['paymentStatus'] =
         // If response is directly an array of orders
         else if (Array.isArray(response)) {
           rawOrdersData = response as RawApiOrder[];
-        }
-        // Handle success wrapper format
-        // eslint-disable-next-line no-dupe-else-if
-        else if (response.success && response.data && Array.isArray(response.data)) {
-          rawOrdersData = response.data as RawApiOrder[];
         }
       }
       
@@ -288,8 +289,8 @@ const determinePaymentStatus = (rawOrder: RawApiOrder): Order['paymentStatus'] =
     }
   };
 
-  // Calculate stats
-  const totalRevenue = filteredOrders.reduce((sum, order) => sum + order.total, 0);
+  // Calculate stats (order.total is guaranteed to be a number after transform)
+  const totalRevenue = filteredOrders.reduce((sum, order) => sum + toNumber(order.total), 0);
   const paidOrders = filteredOrders.filter(o => o.paymentStatus === 'paid').length;
   const completedOrders = filteredOrders.filter(o => o.status === 'delivered').length;
   const avgOrderValue = filteredOrders.length > 0 ? totalRevenue / filteredOrders.length : 0;
@@ -323,6 +324,9 @@ const determinePaymentStatus = (rawOrder: RawApiOrder): Order['paymentStatus'] =
       </TableCell>
       <TableCell>
         <div className="h-4 bg-muted rounded animate-pulse w-12 ml-auto" />
+      </TableCell>
+      <TableCell>
+        <div className="h-9 bg-muted rounded animate-pulse w-10 ml-auto" />
       </TableCell>
     </TableRow>
   );
@@ -398,7 +402,7 @@ const determinePaymentStatus = (rawOrder: RawApiOrder): Order['paymentStatus'] =
               </>
             ) : (
               <>
-                <div className="text-2xl font-bold">${(totalRevenue ?? 0).toFixed(2)}</div>
+                <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground">
                   From {paidOrders} paid orders
                 </p>
@@ -419,7 +423,7 @@ const determinePaymentStatus = (rawOrder: RawApiOrder): Order['paymentStatus'] =
               </>
             ) : (
               <>
-                <div className="text-2xl font-bold">${(avgOrderValue ?? 0).toFixed(2)}</div>
+                <div className="text-2xl font-bold">${avgOrderValue.toFixed(2)}</div>
                 <p className="text-xs text-muted-foreground">
                   Per order average
                 </p>
@@ -572,7 +576,7 @@ const determinePaymentStatus = (rawOrder: RawApiOrder): Order['paymentStatus'] =
                     <TableCell>{getStatusBadge(order.status)}</TableCell>
                     <TableCell>{getPaymentStatusBadge(order.paymentStatus)}</TableCell>
                     <TableCell className="text-right font-medium">
-                      ${(order.total ?? 0).toFixed(2)}
+                      ${toNumber(order.total).toFixed(2)}
                     </TableCell>
                     <TableCell className="text-right">
                       <Link 
