@@ -109,12 +109,7 @@ export function DashboardSidebar() {
                    path="/orders" 
                    active={isActive("/orders")} 
                  />
-                 <SidebarItem 
-                   icon={CalendarCheck} 
-                   label="Bookings" 
-                   path="/bookings" 
-                   active={isActive("/bookings")} 
-                 />
+                
             
                  <SidebarItem 
                    icon={BarChartBig} 
@@ -135,12 +130,7 @@ export function DashboardSidebar() {
                    active={isActive("/analytics")} 
                  />
            
-                       {/* <SidebarItem 
-                   icon={MessageCircle} 
-                   label="Contacts" 
-                   path="/contacts" 
-                   active={isActive("/contacts")} 
-                 /> */}
+              
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

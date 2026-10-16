@@ -27,7 +27,6 @@ import {
 import { useState, useEffect } from "react";
 import adminApiService, { Customer, OrderItem } from "@/contexts/adminApiService";
 
-// Define analytics data interface
 interface AnalyticsData {
   totalRevenue: number;
   totalOrders: number;
@@ -46,7 +45,6 @@ interface AnalyticsData {
   topSellingProducts: { name: string; sales: number; revenue: number }[];
 }
 
-// Since we don't have Order interface with status, let's create a helper
 interface OrderSummary {
   id: string;
   totalAmount: number;
@@ -54,7 +52,6 @@ interface OrderSummary {
   createdAt: string;
 }
 
-// Extended OrderItem with full data from your JSON
 interface ExtendedOrderItem {
   id: number;
   orderId: number;
@@ -124,23 +121,18 @@ export default function Analytics() {
       setLoading(true);
       setError(null);
 
-      // Fetch all necessary data
       const [orderItemsResponse, products, customers] = await Promise.all([
         adminApiService.getOrderItems(),
         adminApiService.getProducts(),
-        adminApiService.getCustomers(),
+        adminApiService.getUsers(),
       ]);
 
-      // Type assertion for order items based on your JSON structure
       const orderItems = (orderItemsResponse as any)?.data as ExtendedOrderItem[] || [];
-
-      // Calculate analytics from the data
-      const calculatedData = calculateAnalyticsData(orderItems, products, customers);
+      const calculatedData = calculateAnalyticsData(orderItems, products || [], customers || []);
       setAnalyticsData(calculatedData);
     } catch (err) {
       console.error('Error fetching analytics data:', err);
       setError('Failed to load analytics data');
-      // Fallback to empty data
       setAnalyticsData(getFallbackData());
     } finally {
       setLoading(false);
@@ -152,63 +144,53 @@ export default function Analytics() {
     products: any[], 
     customers: Customer[]
   ): AnalyticsData => {
-    // Group orders by orderId to avoid double counting
     const ordersMap = new Map<number, OrderSummary>();
-    
-    // Track product sales
     const productSales = new Map<number, { name: string; sales: number; revenue: number }>();
     
     orderItems.forEach(item => {
-      // Create or update order summary
       if (!ordersMap.has(item.orderId)) {
         ordersMap.set(item.orderId, {
           id: item.orderId.toString(),
-          totalAmount: item.order.totalAmount || 0,
-          status: item.order.status || 'pending',
-          createdAt: item.order.createdAt || item.createdAt,
+          totalAmount: Number(item.order?.totalAmount) || 0,
+          status: item.order?.status || 'pending',
+          createdAt: item.order?.createdAt || item.createdAt,
         });
       }
       
-      // Track product sales
       const product = productSales.get(item.productId);
+      const itemPrice = Number(item.price) || 0;
+      const itemQty = Number(item.quantity) || 0;
+
       if (product) {
-        product.sales += item.quantity;
-        product.revenue += item.price * item.quantity;
+        product.sales += itemQty;
+        product.revenue += itemPrice * itemQty;
       } else {
         productSales.set(item.productId, {
-          name: item.productName,
-          sales: item.quantity,
-          revenue: item.price * item.quantity,
+          name: item.productName || 'Unknown Product',
+          sales: itemQty,
+          revenue: itemPrice * itemQty,
         });
       }
     });
     
     const orders = Array.from(ordersMap.values());
-    
-    // Revenue calculations
-    const totalRevenue = orders.reduce((sum, order) => sum + order.totalAmount, 0);
-    
-    // Order calculations
+    const totalRevenue = orders.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0);
     const totalOrders = orders.length;
     const completedOrders = orders.filter(o => o.status === 'completed' || o.status === 'paid').length;
     const pendingOrders = orders.filter(o => o.status === 'pending').length;
     const orderCompletionRate = totalOrders > 0 ? (completedOrders / totalOrders) * 100 : 0;
 
-    // Product calculations - using stock instead of inventory
     const totalProducts = products.length;
     const totalInventoryValue = products.reduce((sum, p) => {
       const price = parseFloat(p.price) || 0;
-      const stock = p.stock || 0;
+      const stock = Number(p.stock) || 0;
       return sum + (price * stock);
     }, 0);
     
-    const lowStockProducts = products.filter(p => (p.stock || 0) < 10).length;
-
-    // Customer calculations
+    const lowStockProducts = products.filter(p => (Number(p.stock) || 0) < 10).length;
     const totalCustomers = customers.length;
     const avgCustomerValue = totalCustomers > 0 ? totalRevenue / totalCustomers : 0;
 
-    // Order status distribution
     const statusCounts = orders.reduce((acc, order) => {
       const status = order.status || 'unknown';
       acc[status] = (acc[status] || 0) + 1;
@@ -222,14 +204,13 @@ export default function Analytics() {
       { name: 'Cancelled', value: statusCounts.cancelled || statusCounts.failed || 0, color: '#ef4444' },
     ];
 
-    // Category performance
     const categoryMap = new Map<string, { count: number; value: number }>();
     
     products.forEach(product => {
       const category = product.categoryLevel1 || 'Uncategorized';
       const existing = categoryMap.get(category);
       const price = parseFloat(product.price) || 0;
-      const stock = product.stock || 0;
+      const stock = Number(product.stock) || 0;
       
       if (existing) {
         existing.count += 1;
@@ -248,26 +229,24 @@ export default function Analytics() {
       value: Math.round(data.value),
     }));
 
-    // Daily orders trend - generate based on order creation dates
     const dailyOrdersData = generateWeeklyData(orderItems);
     const revenueData = generateMonthlyRevenueData(orderItems);
     
-    // Top selling products
     const topSellingProducts = Array.from(productSales.values())
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 5);
 
     return {
-      totalRevenue,
-      totalOrders,
-      completedOrders,
-      pendingOrders,
-      orderCompletionRate,
-      totalProducts,
-      totalInventoryValue,
-      lowStockProducts,
-      totalCustomers,
-      avgCustomerValue,
+      totalRevenue: Number(totalRevenue) || 0,
+      totalOrders: Number(totalOrders) || 0,
+      completedOrders: Number(completedOrders) || 0,
+      pendingOrders: Number(pendingOrders) || 0,
+      orderCompletionRate: Number(orderCompletionRate) || 0,
+      totalProducts: Number(totalProducts) || 0,
+      totalInventoryValue: Number(totalInventoryValue) || 0,
+      lowStockProducts: Number(lowStockProducts) || 0,
+      totalCustomers: Number(totalCustomers) || 0,
+      avgCustomerValue: Number(avgCustomerValue) || 0,
       orderStatusData,
       categoryData,
       dailyOrdersData,
@@ -276,47 +255,42 @@ export default function Analytics() {
     };
   };
 
-  const getFallbackData = (): AnalyticsData => {
-    return {
-      totalRevenue: 0,
-      totalOrders: 0,
-      completedOrders: 0,
-      pendingOrders: 0,
-      orderCompletionRate: 0,
-      totalProducts: 0,
-      totalInventoryValue: 0,
-      lowStockProducts: 0,
-      totalCustomers: 0,
-      avgCustomerValue: 0,
-      orderStatusData: [],
-      categoryData: [],
-      dailyOrdersData: [],
-      revenueData: [],
-      topSellingProducts: [],
-    };
-  };
+  const getFallbackData = (): AnalyticsData => ({
+    totalRevenue: 0,
+    totalOrders: 0,
+    completedOrders: 0,
+    pendingOrders: 0,
+    orderCompletionRate: 0,
+    totalProducts: 0,
+    totalInventoryValue: 0,
+    lowStockProducts: 0,
+    totalCustomers: 0,
+    avgCustomerValue: 0,
+    orderStatusData: [],
+    categoryData: [],
+    dailyOrdersData: [],
+    revenueData: [],
+    topSellingProducts: [],
+  });
 
-  // Generate weekly data from actual order items
   const generateWeeklyData = (orderItems: ExtendedOrderItem[]) => {
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     const dayOrders = new Map<string, { orders: Set<number>; revenue: number }>();
     
-    // Initialize all days
     days.forEach(day => {
       dayOrders.set(day, { orders: new Set(), revenue: 0 });
     });
     
-    // Process order items
     orderItems.forEach(item => {
       try {
         const date = new Date(item.createdAt);
         const dayIndex = date.getDay();
-        const dayName = days[dayIndex === 0 ? 6 : dayIndex - 1]; // Convert to 0=Mon, 6=Sun
+        const dayName = days[dayIndex === 0 ? 6 : dayIndex - 1];
         
         const dayData = dayOrders.get(dayName);
         if (dayData) {
           dayData.orders.add(item.orderId);
-          dayData.revenue += item.price * item.quantity;
+          dayData.revenue += (Number(item.price) || 0) * (Number(item.quantity) || 0);
         }
       } catch (e) {
         console.warn('Error processing date:', e);
@@ -337,12 +311,10 @@ export default function Analytics() {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const monthRevenue = new Map<string, number>();
     
-    // Initialize all months
     months.forEach(month => {
       monthRevenue.set(month, 0);
     });
     
-    // Process order items
     orderItems.forEach(item => {
       try {
         const date = new Date(item.createdAt);
@@ -350,7 +322,7 @@ export default function Analytics() {
         const monthName = months[monthIndex];
         
         const currentRevenue = monthRevenue.get(monthName) || 0;
-        monthRevenue.set(monthName, currentRevenue + (item.price * item.quantity));
+        monthRevenue.set(monthName, currentRevenue + ((Number(item.price) || 0) * (Number(item.quantity) || 0)));
       } catch (e) {
         console.warn('Error processing date:', e);
       }
@@ -423,7 +395,6 @@ export default function Analytics() {
     topSellingProducts,
   } = analyticsData;
 
-  // Calculate revenue growth (simplified - in real app compare with previous period)
   const revenueGrowth = 12.5;
 
   return (
@@ -441,7 +412,7 @@ export default function Analytics() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${(totalRevenue ?? 0).toFixed(2)}</div>
+            <div className="text-2xl font-bold">${Number(totalRevenue || 0).toFixed(2)}</div>
             <p className="text-xs text-success flex items-center mt-1">
               <TrendingUp className="h-3 w-3 mr-1" />
               +{revenueGrowth.toFixed(1)}% from last month
@@ -457,7 +428,7 @@ export default function Analytics() {
           <CardContent>
             <div className="text-2xl font-bold">{totalOrders}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              {(orderCompletionRate ?? 0).toFixed(1)}% completion rate
+              {Number(orderCompletionRate || 0).toFixed(1)}% completion rate
             </p>
           </CardContent>
         </Card>
@@ -470,7 +441,7 @@ export default function Analytics() {
           <CardContent>
             <div className="text-2xl font-bold">{totalCustomers}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              ${(avgCustomerValue ?? 0).toFixed(2)} avg value
+              ${Number(avgCustomerValue || 0).toFixed(2)} avg value
             </p>
           </CardContent>
         </Card>
@@ -481,7 +452,7 @@ export default function Analytics() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${(totalInventoryValue ?? 0).toFixed(2)}</div>
+            <div className="text-2xl font-bold">${Number(totalInventoryValue || 0).toFixed(2)}</div>
             <p className="text-xs text-warning mt-1">
               {lowStockProducts} low stock items
             </p>
@@ -491,7 +462,6 @@ export default function Analytics() {
 
       {/* Charts Row 1 */}
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Revenue Trend */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -514,7 +484,6 @@ export default function Analytics() {
           </CardContent>
         </Card>
 
-        {/* Daily Orders */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -546,7 +515,6 @@ export default function Analytics() {
 
       {/* Charts Row 2 */}
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Order Status Distribution */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -578,7 +546,6 @@ export default function Analytics() {
           </CardContent>
         </Card>
 
-        {/* Category Performance */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -624,7 +591,7 @@ export default function Analytics() {
               </div>
               <div className="flex justify-between text-sm font-bold pt-2 border-t">
                 <span>Success Rate</span>
-                <span className="text-success">{(orderCompletionRate ?? 0).toFixed(1)}%</span>
+                <span className="text-success">{Number(orderCompletionRate || 0).toFixed(1)}%</span>
               </div>
             </div>
           </CardContent>
@@ -646,7 +613,7 @@ export default function Analytics() {
               </div>
               <div className="flex justify-between text-sm">
                 <span>Inventory Value</span>
-                <span className="font-medium">${(totalInventoryValue ?? 0).toFixed(2)}</span>
+                <span className="font-medium">${Number(totalInventoryValue || 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm font-bold pt-2 border-t">
                 <span>Stock Health</span>
@@ -671,16 +638,16 @@ export default function Analytics() {
               <div className="flex justify-between text-sm">
                 <span>Avg Order Value</span>
                 <span className="font-medium">
-                  ${totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(2) : 0}
+                  ${totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(2) : '0.00'}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span>Total Revenue</span>
-                <span className="font-medium">${(totalRevenue ?? 0).toFixed(2)}</span>
+                <span className="font-medium">${Number(totalRevenue || 0).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm font-bold pt-2 border-t">
                 <span>Customer LTV</span>
-                <span className="text-success">${(avgCustomerValue ?? 0).toFixed(2)}</span>
+                <span className="text-success">${Number(avgCustomerValue || 0).toFixed(2)}</span>
               </div>
             </div>
           </CardContent>
@@ -708,9 +675,9 @@ export default function Analytics() {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold">${(product.revenue ?? 0).toFixed(2)}</p>
+                    <p className="font-bold">${Number(product.revenue || 0).toFixed(2)}</p>
                     <p className="text-sm text-muted-foreground">
-                      ${product.sales > 0 ? ((product.revenue ?? 0) / product.sales).toFixed(2) : '0.00'} avg
+                      ${product.sales > 0 ? (Number(product.revenue || 0) / product.sales).toFixed(2) : '0.00'} avg
                     </p>
                   </div>
                 </div>
