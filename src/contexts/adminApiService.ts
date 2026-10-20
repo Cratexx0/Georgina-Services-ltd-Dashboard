@@ -449,7 +449,7 @@ class AdminApiService {
     const queryString = queryParams.toString();
     const endpoint = `/api/admin/products/special${queryString ? `?${queryString}` : ''}`;
 
-    console.log('API Call:', endpoint); // Debug log
+
     return this.request(endpoint);
   }
 
@@ -470,7 +470,7 @@ class AdminApiService {
     const queryString = queryParams.toString();
     const endpoint = `/api/admin/products/special/available${queryString ? `?${queryString}` : ''}`;
 
-    console.log('API Call:', endpoint); // Debug log
+
     return this.request(endpoint);
   }
 
@@ -489,7 +489,7 @@ class AdminApiService {
       }
   ): Promise<{ product: Product; message: string }> {
     const endpoint = `/api/admin/products/special/${productId}`;
-    console.log('API Call:', endpoint, updates); // Debug log
+
     return this.request(endpoint, {
       method: 'PATCH',
       body: JSON.stringify(updates),
@@ -503,7 +503,7 @@ class AdminApiService {
       updates: BulkSpecialUpdate
   ): Promise<BulkUpdateResponse> {
     const endpoint = '/api/admin/products/special/bulk/update';
-    console.log('API Call:', endpoint, updates); // Debug log
+
     return this.request(endpoint, {
       method: 'PATCH',
       body: JSON.stringify(updates),
@@ -723,8 +723,6 @@ class AdminApiService {
 
     const queryString = queryParams.toString();
     const endpoint = `/api/admin/categories/${id}${queryString ? `?${queryString}` : ''}`;
-
-    console.log('🗑️ Delete category API call:', endpoint);
     return this.request(endpoint, {
       method: 'DELETE',
     });

@@ -68,7 +68,7 @@ const AsyncImageLoader: React.FC<AsyncImageLoaderProps> = ({ src, alt, className
         alt={alt}
         className={`${className} object-cover ${isLoadingImage ? 'opacity-0' : 'opacity-100'}`}
         onLoad={() => {
-            console.log(`✅ Image loaded successfully: ${imageSrc}`);
+         
             setIsLoadingImage(false);
         }}
         onError={(e) => {

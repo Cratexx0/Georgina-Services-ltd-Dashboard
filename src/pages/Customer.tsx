@@ -459,7 +459,7 @@ export default function Customers() {
                           </div>
                           <div className="max-w-[150px]">
                             <div className="font-medium truncate" title={customer.name}>{customer.name}</div>
-                            <div className="text-sm text-muted-foreground truncate" title={customer.id}>ID: {customer.id}</div>
+                            <div className="text-sm text-muted-foreground truncate" >ID: {customer.id}</div>
                           </div>
                         </div>
                       </td>

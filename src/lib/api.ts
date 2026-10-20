@@ -1,2 +1,2 @@
 
-export const API_BASE_URL = "https://georgina-services-ltd-server.onrender.com" 
+export const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8003";
