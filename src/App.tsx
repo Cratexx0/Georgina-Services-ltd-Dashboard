@@ -1,5 +1,3 @@
-
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -32,56 +30,73 @@ const Reviews = lazy(() => import("@/pages/Review.tsx"));
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <AuthProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Suspense fallback={
-              <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-              </div>
-            }>
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/" element={<Login />} />
-                <Route path="/login" element={<Login />} />
-                
-                {/* Protected Dashboard Routes */}
-                <Route element={<ProtectedRoute />}>
-                  <Route element={<DashboardLayout />}>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/products" element={<Products />} />
-                    <Route path="/admin/products" element={<Products />} />
-                    <Route path="/admin/products/:id" element={<ProductDetails />} />
-                    <Route path="/admin/products/:id/edit" element={<ProductEdit />} />
-                     <Route path="/review" element={<Reviews />} />
-                     <Route path="/products/:id" element={<ProductDetails />} />
-                    <Route path="/categories" element={<Categories />} />
-                    <Route path="/orders" element={<Orders />} />
-                    <Route path="/admin/orders/:orderId" element={<OrderDetailsPage />} />
-                    <Route path="/contacts" element={<ContactMessagesAdmin />} />
-                     <Route path="/users" element={<Customers />} />
-                    <Route path="/analytics" element={<Analytics />} />
-                    <Route path="/settings" element={<Settings />} />
-                  </Route>
-                </Route>
-                
-                {/* Redirect root to login for unauthenticated users */}
-                <Route path="/home" element={<Navigate to="/" replace />} />
-                <Route path="/admin" element={<Navigate to="/dashboard" replace />} />
-                
-                {/* Catch all - redirect to login */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AuthProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
+	<QueryClientProvider client={queryClient}>
+		<ThemeProvider>
+			<AuthProvider>
+				<TooltipProvider>
+					<Toaster />
+					<Sonner />
+					<BrowserRouter>
+						<Suspense
+							fallback={
+								<div className="flex items-center justify-center min-h-screen">
+									<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+								</div>
+							}
+						>
+							<Routes>
+								{/* Public Routes */}
+								<Route path="/" element={<Login />} />
+								<Route path="/login" element={<Login />} />
+
+								{/* Protected Dashboard Routes */}
+								<Route element={<ProtectedRoute />}>
+									<Route element={<DashboardLayout />}>
+										<Route path="/dashboard" element={<Dashboard />} />
+										<Route path="/products" element={<Products />} />
+										<Route path="/admin/products" element={<Products />} />
+										<Route
+											path="/admin/products/:id"
+											element={<ProductDetails />}
+										/>
+										<Route
+											path="/admin/products/:id/edit"
+											element={<ProductEdit />}
+										/>
+										<Route path="/review" element={<Reviews />} />
+										<Route path="/products/:id" element={<ProductDetails />} />
+										<Route path="/categories" element={<Categories />} />
+										<Route path="/orders" element={<Orders />} />
+										<Route
+											path="/orders/:orderId"
+											element={<OrderDetailsPage />}
+										/>
+										<Route
+											path="/contacts"
+											element={<ContactMessagesAdmin />}
+										/>
+										<Route path="/users" element={<Customers />} />
+										<Route path="/analytics" element={<Analytics />} />
+										<Route path="/settings" element={<Settings />} />
+									</Route>
+								</Route>
+
+								{/* Redirect root to login for unauthenticated users */}
+								<Route path="/home" element={<Navigate to="/" replace />} />
+								<Route
+									path="/admin"
+									element={<Navigate to="/dashboard" replace />}
+								/>
+
+								{/* Catch all - redirect to login */}
+								<Route path="*" element={<NotFound />} />
+							</Routes>
+						</Suspense>
+					</BrowserRouter>
+				</TooltipProvider>
+			</AuthProvider>
+		</ThemeProvider>
+	</QueryClientProvider>
 );
 
 export default App;
