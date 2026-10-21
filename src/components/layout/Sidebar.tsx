@@ -66,13 +66,13 @@ export function DashboardSidebar() {
           {!isCollapsed && (
             <div className="flex flex-col">
               <div>
-                  <Link to="/">
-                   <img
+                <Link to="/">
+                  <img
                     src="/gina_logo.png"
                     alt="Gina E-Commerce Logo"
                     className="h-14 mb-1"
-                   />
-                  </Link>
+                  />
+                </Link>
               </div>
             </div>
           )}
@@ -91,46 +91,48 @@ export function DashboardSidebar() {
                 active={isActive("/dashboard")}
               />
 
-                 <SidebarItem 
-                   icon={Package} 
-                   label="Products" 
-                   path="/products" 
-                   active={isActive("/products")} 
-                 />
-                 <SidebarItem 
-                   icon={FolderTree} 
-                   label="Categories" 
-                   path="/categories" 
-                   active={isActive("/categories")} 
-                 />
-                 <SidebarItem 
-                   icon={ShoppingCart} 
-                   label="Orders" 
-                   path="/orders" 
-                   active={isActive("/orders")} 
-                 />
-                
-            
-                 <SidebarItem 
-                   icon={BarChartBig} 
-                   label="Analytics" 
-                   path="/analytics" 
-                   active={isActive("/analytics")} 
-                 />
-                      <SidebarItem 
-                   icon={User2} 
-                   label="Users" 
-                   path="/users" 
-                   active={isActive("/users")} 
-                 />
-                 <SidebarItem 
-                   icon={BarChartBig} 
-                   label="Reviews" 
-                   path="/review" 
-                   active={isActive("/analytics")} 
-                 />
-           
-              
+              <SidebarItem
+                icon={BarChartBig}
+                label="Analytics"
+                path="/analytics"
+                active={isActive("/analytics")}
+              />
+
+              <SidebarItem
+                icon={Package}
+                label="Products"
+                path="/products"
+                active={isActive("/products")}
+              />
+              <SidebarItem
+                icon={FolderTree}
+                label="Categories"
+                path="/categories"
+                active={isActive("/categories")}
+              />
+              <SidebarItem
+                icon={ShoppingCart}
+                label="Orders"
+                path="/orders"
+                active={isActive("/orders")}
+              />
+
+
+
+              <SidebarItem
+                icon={User2}
+                label="Users"
+                path="/users"
+                active={isActive("/users")}
+              />
+              <SidebarItem
+                icon={BarChartBig}
+                label="Reviews"
+                path="/review"
+                active={isActive("/analytics")}
+              />
+
+
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

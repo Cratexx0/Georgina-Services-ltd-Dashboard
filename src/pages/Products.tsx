@@ -1382,7 +1382,7 @@ export default function Products() {
                     </TableHeader>
                     <TableBody>
                       {paginatedProducts.map((product) => (
-                        <TableRow key={product.id} className="hover:bg-muted/50">
+                        <TableRow  onClick={() => navigate(`/admin/products/${product.id}`)} key={product.id} className="hover:bg-muted/50">
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <img
@@ -1443,6 +1443,7 @@ export default function Products() {
                               )}
                             </div>
                           </TableCell>
+                    
                           <TableCell>
                             {product.size ? (
                               <div className="flex flex-wrap gap-1 max-w-24">
