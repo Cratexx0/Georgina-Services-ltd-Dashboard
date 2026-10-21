@@ -280,6 +280,8 @@ const extractErrorMessage = async (response: Response): Promise<{ message: strin
   }
 };
 
+export const AUTH_EXPIRED_EVENT = "admin-auth-expired";
+
 class AdminApiService {
   private baseUrl: string;
   private token: string | null = null;
@@ -331,6 +333,7 @@ class AdminApiService {
       if (response.status === 401) {
         this.clearToken();
         localStorage.removeItem('e-commerce-admin-user');
+        window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
         throw new ApiError('Authentication failed. Please login again.', 401);
       }
 
@@ -376,6 +379,7 @@ class AdminApiService {
       if (response.status === 401) {
         this.clearToken();
         localStorage.removeItem('e-commerce-admin-user');
+        window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
         throw new ApiError('Authentication failed. Please login again.', 401);
       }
 

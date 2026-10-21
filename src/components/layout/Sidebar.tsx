@@ -39,7 +39,15 @@ function SidebarItem({ icon: Icon, label, path, active }: SidebarItemProps) {
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={active} tooltip={label}>
+      <SidebarMenuButton
+        asChild
+        isActive={active}
+        tooltip={label}
+        className={cn(
+          active &&
+            "border-l-4 border-sidebar-primary bg-sidebar-accent font-semibold text-sidebar-accent-foreground shadow-sm",
+        )}
+      >
         <Link to={path} className="flex items-center gap-3">
           <Icon className="h-5 w-5 flex-shrink-0" />
           {!isCollapsed && <span>{label}</span>}
@@ -55,8 +63,11 @@ export function DashboardSidebar() {
   const { state } = useSidebar();
   const isCollapsed = state === "collapsed";
 
-  const isActive = (path: string) => {
-    return pathname === path;
+  const isActive = (paths: string | string[]) => {
+    const pathList = Array.isArray(paths) ? paths : [paths];
+    return pathList.some(
+      (path) => pathname === path || pathname.startsWith(`${path}/`),
+    );
   };
 
   return (
@@ -102,7 +113,7 @@ export function DashboardSidebar() {
                 icon={Package}
                 label="Products"
                 path="/products"
-                active={isActive("/products")}
+                active={isActive(["/products", "/admin/products"])}
               />
               <SidebarItem
                 icon={FolderTree}
@@ -129,7 +140,7 @@ export function DashboardSidebar() {
                 icon={BarChartBig}
                 label="Reviews"
                 path="/review"
-                active={isActive("/analytics")}
+                active={isActive("/review")}
               />
 
 
